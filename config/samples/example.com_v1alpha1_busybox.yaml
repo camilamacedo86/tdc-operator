@@ -1,0 +1,11 @@
+apiVersion: example.com.my.domain/v1alpha1
+kind: Busybox
+metadata:
+  labels:
+    app.kubernetes.io/name: tdc-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: busybox-sample
+spec:
+  # TODO(user): edit the following value to ensure the number
+  # of Pods/Instances your Operand must have on cluster
+  size: 1
