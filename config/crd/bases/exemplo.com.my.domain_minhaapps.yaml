@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: busyboxes.example.com.my.domain
+  name: minhaapps.exemplo.com.my.domain
 spec:
-  group: example.com.my.domain
+  group: exemplo.com.my.domain
   names:
-    kind: Busybox
-    listKind: BusyboxList
-    plural: busyboxes
-    singular: busybox
+    kind: MinhaApp
+    listKind: MinhaAppList
+    plural: minhaapps
+    singular: minhaapp
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Busybox is the Schema for the busyboxes API
+        description: MinhaApp is the Schema for the minhaapps API
         properties:
           apiVersion:
             description: |-
@@ -37,21 +37,28 @@ spec:
           metadata:
             type: object
           spec:
-            description: spec defines the desired state of Busybox
+            description: spec defines the desired state of MinhaApp
             properties:
+              containerPort:
+                description: containerPort defines the port that will be used to init
+                  the container with the image
+                format: int32
+                type: integer
               size:
                 default: 1
-                description: size defines the number of Busybox instances
+                description: size defines the number of MinhaApp instances
                 format: int32
                 minimum: 0
                 type: integer
+            required:
+            - containerPort
             type: object
           status:
-            description: status defines the observed state of Busybox
+            description: status defines the observed state of MinhaApp
             properties:
               conditions:
                 description: |-
-                  conditions represent the current state of the Busybox resource.
+                  conditions represent the current state of the MinhaApp resource.
                   Each condition has a unique type and reflects the status of a specific aspect of the resource.
 
                   Standard condition types include:

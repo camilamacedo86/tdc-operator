@@ -11,11 +11,13 @@ plugins:
   deploy-image.go.kubebuilder.io/v1-alpha:
     resources:
     - domain: my.domain
-      group: example.com
-      kind: Busybox
+      group: exemplo.com
+      kind: MinhaApp
       options:
-        image: busybox:1.36.1
+        containerPort: "80"
+        image: nginx:1.25
       version: v1alpha1
+  helm.kubebuilder.io/v1-alpha: {}
 projectName: tdc-operator
 repo: github/tdc-operator
 resources:
@@ -24,8 +26,8 @@ resources:
     namespaced: true
   controller: true
   domain: my.domain
-  group: example.com
-  kind: Busybox
+  group: exemplo.com
+  kind: MinhaApp
   path: github/tdc-operator/api/v1alpha1
   version: v1alpha1
 version: "3"

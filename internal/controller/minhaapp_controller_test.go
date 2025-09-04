@@ -32,28 +32,28 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	examplecomv1alpha1 "github/tdc-operator/api/v1alpha1"
+	exemplocomv1alpha1 "github/tdc-operator/api/v1alpha1"
 )
 
-var _ = Describe("Busybox controller", func() {
-	Context("Busybox controller test", func() {
+var _ = Describe("MinhaApp controller", func() {
+	Context("MinhaApp controller test", func() {
 
-		const BusyboxName = "test-busybox"
+		const MinhaAppName = "test-minhaapp"
 
 		ctx := context.Background()
 
 		namespace := &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      BusyboxName,
-				Namespace: BusyboxName,
+				Name:      MinhaAppName,
+				Namespace: MinhaAppName,
 			},
 		}
 
 		typeNamespacedName := types.NamespacedName{
-			Name:      BusyboxName,
-			Namespace: BusyboxName,
+			Name:      MinhaAppName,
+			Namespace: MinhaAppName,
 		}
-		busybox := &examplecomv1alpha1.Busybox{}
+		minhaapp := &exemplocomv1alpha1.MinhaApp{}
 
 		SetDefaultEventuallyTimeout(2 * time.Minute)
 		SetDefaultEventuallyPollingInterval(time.Second)
@@ -64,32 +64,33 @@ var _ = Describe("Busybox controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Setting the Image ENV VAR which stores the Operand image")
-			err = os.Setenv("BUSYBOX_IMAGE", "example.com/image:test")
+			err = os.Setenv("MINHAAPP_IMAGE", "example.com/image:test")
 			Expect(err).NotTo(HaveOccurred())
 
-			By("creating the custom resource for the Kind Busybox")
-			err = k8sClient.Get(ctx, typeNamespacedName, busybox)
+			By("creating the custom resource for the Kind MinhaApp")
+			err = k8sClient.Get(ctx, typeNamespacedName, minhaapp)
 			if err != nil && errors.IsNotFound(err) {
 				// Let's mock our custom resource at the same way that we would
 				// apply on the cluster the manifest under config/samples
-				busybox = &examplecomv1alpha1.Busybox{
+				minhaapp = &exemplocomv1alpha1.MinhaApp{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      BusyboxName,
+						Name:      MinhaAppName,
 						Namespace: namespace.Name,
 					},
-					Spec: examplecomv1alpha1.BusyboxSpec{
-						Size: ptr.To(int32(1)),
+					Spec: exemplocomv1alpha1.MinhaAppSpec{
+						Size:          ptr.To(int32(1)),
+						ContainerPort: 80,
 					},
 				}
 
-				err = k8sClient.Create(ctx, busybox)
+				err = k8sClient.Create(ctx, minhaapp)
 				Expect(err).NotTo(HaveOccurred())
 			}
 		})
 
 		AfterEach(func() {
-			By("removing the custom resource for the Kind Busybox")
-			found := &examplecomv1alpha1.Busybox{}
+			By("removing the custom resource for the Kind MinhaApp")
+			found := &exemplocomv1alpha1.MinhaApp{}
 			err := k8sClient.Get(ctx, typeNamespacedName, found)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -104,23 +105,23 @@ var _ = Describe("Busybox controller", func() {
 			_ = k8sClient.Delete(ctx, namespace)
 
 			By("Removing the Image ENV VAR which stores the Operand image")
-			_ = os.Unsetenv("BUSYBOX_IMAGE")
+			_ = os.Unsetenv("MINHAAPP_IMAGE")
 		})
 
-		It("should successfully reconcile a custom resource for Busybox", func() {
+		It("should successfully reconcile a custom resource for MinhaApp", func() {
 			By("Checking if the custom resource was successfully created")
 			Eventually(func(g Gomega) {
-				found := &examplecomv1alpha1.Busybox{}
+				found := &exemplocomv1alpha1.MinhaApp{}
 				Expect(k8sClient.Get(ctx, typeNamespacedName, found)).To(Succeed())
 			}).Should(Succeed())
 
 			By("Reconciling the custom resource created")
-			busyboxReconciler := &BusyboxReconciler{
+			minhaappReconciler := &MinhaAppReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}
 
-			_, err := busyboxReconciler.Reconcile(ctx, reconcile.Request{
+			_, err := minhaappReconciler.Reconcile(ctx, reconcile.Request{
 				NamespacedName: typeNamespacedName,
 			})
 			Expect(err).NotTo(HaveOccurred())
@@ -132,19 +133,19 @@ var _ = Describe("Busybox controller", func() {
 			}).Should(Succeed())
 
 			By("Reconciling the custom resource again")
-			_, err = busyboxReconciler.Reconcile(ctx, reconcile.Request{
+			_, err = minhaappReconciler.Reconcile(ctx, reconcile.Request{
 				NamespacedName: typeNamespacedName,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Checking the latest Status Condition added to the Busybox instance")
-			Expect(k8sClient.Get(ctx, typeNamespacedName, busybox)).To(Succeed())
+			By("Checking the latest Status Condition added to the MinhaApp instance")
+			Expect(k8sClient.Get(ctx, typeNamespacedName, minhaapp)).To(Succeed())
 			var conditions []metav1.Condition
-			Expect(busybox.Status.Conditions).To(ContainElement(
-				HaveField("Type", Equal(typeAvailableBusybox)), &conditions))
-			Expect(conditions).To(HaveLen(1), "Multiple conditions of type %s", typeAvailableBusybox)
-			Expect(conditions[0].Status).To(Equal(metav1.ConditionTrue), "condition %s", typeAvailableBusybox)
-			Expect(conditions[0].Reason).To(Equal("Reconciling"), "condition %s", typeAvailableBusybox)
+			Expect(minhaapp.Status.Conditions).To(ContainElement(
+				HaveField("Type", Equal(typeAvailableMinhaApp)), &conditions))
+			Expect(conditions).To(HaveLen(1), "Multiple conditions of type %s", typeAvailableMinhaApp)
+			Expect(conditions[0].Status).To(Equal(metav1.ConditionTrue), "condition %s", typeAvailableMinhaApp)
+			Expect(conditions[0].Reason).To(Equal("Reconciling"), "condition %s", typeAvailableMinhaApp)
 		})
 	})
 })

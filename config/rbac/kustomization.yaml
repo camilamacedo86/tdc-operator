@@ -22,7 +22,7 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the tdc-operator itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
-- busybox_admin_role.yaml
-- busybox_editor_role.yaml
-- busybox_viewer_role.yaml
+- minhaapp_admin_role.yaml
+- minhaapp_editor_role.yaml
+- minhaapp_viewer_role.yaml
 

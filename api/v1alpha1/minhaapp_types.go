@@ -23,26 +23,30 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// BusyboxSpec defines the desired state of Busybox
-type BusyboxSpec struct {
+// MinhaAppSpec defines the desired state of MinhaApp
+type MinhaAppSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// The following markers will use OpenAPI v3 schema to validate the value
 	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
 
-	// size defines the number of Busybox instances
+	// size defines the number of MinhaApp instances
 	// +kubebuilder:default=1
 	// +kubebuilder:validation:Minimum=0
 	// +optional
 	Size *int32 `json:"size,omitempty"`
+
+	// containerPort defines the port that will be used to init the container with the image
+	// +required
+	ContainerPort int32 `json:"containerPort"`
 }
 
-// BusyboxStatus defines the observed state of Busybox
-type BusyboxStatus struct {
+// MinhaAppStatus defines the observed state of MinhaApp
+type MinhaAppStatus struct {
 	// For Kubernetes API conventions, see:
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
 
-	// conditions represent the current state of the Busybox resource.
+	// conditions represent the current state of the MinhaApp resource.
 	// Each condition has a unique type and reflects the status of a specific aspect of the resource.
 	//
 	// Standard condition types include:
@@ -60,32 +64,32 @@ type BusyboxStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// Busybox is the Schema for the busyboxes API
-type Busybox struct {
+// MinhaApp is the Schema for the minhaapps API
+type MinhaApp struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// metadata is a standard object metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty,omitzero"`
 
-	// spec defines the desired state of Busybox
+	// spec defines the desired state of MinhaApp
 	// +required
-	Spec BusyboxSpec `json:"spec"`
+	Spec MinhaAppSpec `json:"spec"`
 
-	// status defines the observed state of Busybox
+	// status defines the observed state of MinhaApp
 	// +optional
-	Status BusyboxStatus `json:"status,omitempty,omitzero"`
+	Status MinhaAppStatus `json:"status,omitempty,omitzero"`
 }
 
 // +kubebuilder:object:root=true
 
-// BusyboxList contains a list of Busybox
-type BusyboxList struct {
+// MinhaAppList contains a list of MinhaApp
+type MinhaAppList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Busybox `json:"items"`
+	Items           []MinhaApp `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Busybox{}, &BusyboxList{})
+	SchemeBuilder.Register(&MinhaApp{}, &MinhaAppList{})
 }

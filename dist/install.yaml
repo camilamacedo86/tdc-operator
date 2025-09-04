@@ -12,20 +12,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: busyboxes.example.com.my.domain
+  name: minhaapps.exemplo.com.my.domain
 spec:
-  group: example.com.my.domain
+  group: exemplo.com.my.domain
   names:
-    kind: Busybox
-    listKind: BusyboxList
-    plural: busyboxes
-    singular: busybox
+    kind: MinhaApp
+    listKind: MinhaAppList
+    plural: minhaapps
+    singular: minhaapp
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Busybox is the Schema for the busyboxes API
+        description: MinhaApp is the Schema for the minhaapps API
         properties:
           apiVersion:
             description: |-
@@ -45,21 +45,28 @@ spec:
           metadata:
             type: object
           spec:
-            description: spec defines the desired state of Busybox
+            description: spec defines the desired state of MinhaApp
             properties:
+              containerPort:
+                description: containerPort defines the port that will be used to init
+                  the container with the image
+                format: int32
+                type: integer
               size:
                 default: 1
-                description: size defines the number of Busybox instances
+                description: size defines the number of MinhaApp instances
                 format: int32
                 minimum: 0
                 type: integer
+            required:
+            - containerPort
             type: object
           status:
-            description: status defines the observed state of Busybox
+            description: status defines the observed state of MinhaApp
             properties:
               conditions:
                 description: |-
-                  conditions represent the current state of the Busybox resource.
+                  conditions represent the current state of the MinhaApp resource.
                   Each condition has a unique type and reflects the status of a specific aspect of the resource.
 
                   Standard condition types include:
@@ -188,77 +195,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: tdc-operator
-  name: tdc-operator-busybox-admin-role
-rules:
-- apiGroups:
-  - example.com.my.domain
-  resources:
-  - busyboxes
-  verbs:
-  - '*'
-- apiGroups:
-  - example.com.my.domain
-  resources:
-  - busyboxes/status
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: tdc-operator
-  name: tdc-operator-busybox-editor-role
-rules:
-- apiGroups:
-  - example.com.my.domain
-  resources:
-  - busyboxes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - example.com.my.domain
-  resources:
-  - busyboxes/status
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/name: tdc-operator
-  name: tdc-operator-busybox-viewer-role
-rules:
-- apiGroups:
-  - example.com.my.domain
-  resources:
-  - busyboxes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - example.com.my.domain
-  resources:
-  - busyboxes/status
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
   name: tdc-operator-manager-role
 rules:
 - apiGroups:
@@ -289,9 +225,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - example.com.my.domain
+  - exemplo.com.my.domain
   resources:
-  - busyboxes
+  - minhaapps
   verbs:
   - create
   - delete
@@ -301,15 +237,15 @@ rules:
   - update
   - watch
 - apiGroups:
-  - example.com.my.domain
+  - exemplo.com.my.domain
   resources:
-  - busyboxes/finalizers
+  - minhaapps/finalizers
   verbs:
   - update
 - apiGroups:
-  - example.com.my.domain
+  - exemplo.com.my.domain
   resources:
-  - busyboxes/status
+  - minhaapps/status
   verbs:
   - get
   - patch
@@ -340,6 +276,77 @@ metadata:
 rules:
 - nonResourceURLs:
   - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: tdc-operator
+  name: tdc-operator-minhaapp-admin-role
+rules:
+- apiGroups:
+  - exemplo.com.my.domain
+  resources:
+  - minhaapps
+  verbs:
+  - '*'
+- apiGroups:
+  - exemplo.com.my.domain
+  resources:
+  - minhaapps/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: tdc-operator
+  name: tdc-operator-minhaapp-editor-role
+rules:
+- apiGroups:
+  - exemplo.com.my.domain
+  resources:
+  - minhaapps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - exemplo.com.my.domain
+  resources:
+  - minhaapps/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: tdc-operator
+  name: tdc-operator-minhaapp-viewer-role
+rules:
+- apiGroups:
+  - exemplo.com.my.domain
+  resources:
+  - minhaapps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - exemplo.com.my.domain
+  resources:
+  - minhaapps/status
   verbs:
   - get
 ---
@@ -439,8 +446,8 @@ spec:
         command:
         - /manager
         env:
-        - name: BUSYBOX_IMAGE
-          value: busybox:1.36.1
+        - name: MINHAAPP_IMAGE
+          value: nginx:1.25
         image: controller:latest
         livenessProbe:
           httpGet:

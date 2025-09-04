@@ -37,21 +37,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	examplecomv1alpha1 "github/tdc-operator/api/v1alpha1"
+	exemplocomv1alpha1 "github/tdc-operator/api/v1alpha1"
 )
 
-const busyboxFinalizer = "example.com.my.domain/finalizer"
+const minhaappFinalizer = "exemplo.com.my.domain/finalizer"
 
 // Definitions to manage status conditions
 const (
-	// typeAvailableBusybox represents the status of the Deployment reconciliation
-	typeAvailableBusybox = "Available"
-	// typeDegradedBusybox represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
-	typeDegradedBusybox = "Degraded"
+	// typeAvailableMinhaApp represents the status of the Deployment reconciliation
+	typeAvailableMinhaApp = "Available"
+	// typeDegradedMinhaApp represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
+	typeDegradedMinhaApp = "Degraded"
 )
 
-// BusyboxReconciler reconciles a Busybox object
-type BusyboxReconciler struct {
+// MinhaAppReconciler reconciles a MinhaApp object
+type MinhaAppReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
@@ -61,9 +61,9 @@ type BusyboxReconciler struct {
 // when the command <make manifests> is executed.
 // To know more about markers see: https://book.kubebuilder.io/reference/markers.html
 
-// +kubebuilder:rbac:groups=example.com.my.domain,resources=busyboxes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=example.com.my.domain,resources=busyboxes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=example.com.my.domain,resources=busyboxes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=exemplo.com.my.domain,resources=minhaapps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=exemplo.com.my.domain,resources=minhaapps/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=exemplo.com.my.domain,resources=minhaapps/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
@@ -79,40 +79,40 @@ type BusyboxReconciler struct {
 // - About Operator Pattern: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
 // - About Controllers: https://kubernetes.io/docs/concepts/architecture/controller/
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.21.0/pkg/reconcile
-func (r *BusyboxReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *MinhaAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 
-	// Fetch the Busybox instance
-	// The purpose is check if the Custom Resource for the Kind Busybox
+	// Fetch the MinhaApp instance
+	// The purpose is check if the Custom Resource for the Kind MinhaApp
 	// is applied on the cluster if not we return nil to stop the reconciliation
-	busybox := &examplecomv1alpha1.Busybox{}
-	err := r.Get(ctx, req.NamespacedName, busybox)
+	minhaapp := &exemplocomv1alpha1.MinhaApp{}
+	err := r.Get(ctx, req.NamespacedName, minhaapp)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			// If the custom resource is not found then it usually means that it was deleted or not created
 			// In this way, we will stop the reconciliation
-			log.Info("busybox resource not found. Ignoring since object must be deleted")
+			log.Info("minhaapp resource not found. Ignoring since object must be deleted")
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		log.Error(err, "Failed to get busybox")
+		log.Error(err, "Failed to get minhaapp")
 		return ctrl.Result{}, err
 	}
 
-	if len(busybox.Status.Conditions) == 0 {
-		meta.SetStatusCondition(&busybox.Status.Conditions, metav1.Condition{Type: typeAvailableBusybox, Status: metav1.ConditionUnknown, Reason: "Reconciling", Message: "Starting reconciliation"})
-		if err = r.Status().Update(ctx, busybox); err != nil {
-			log.Error(err, "Failed to update Busybox status")
+	if len(minhaapp.Status.Conditions) == 0 {
+		meta.SetStatusCondition(&minhaapp.Status.Conditions, metav1.Condition{Type: typeAvailableMinhaApp, Status: metav1.ConditionUnknown, Reason: "Reconciling", Message: "Starting reconciliation"})
+		if err = r.Status().Update(ctx, minhaapp); err != nil {
+			log.Error(err, "Failed to update MinhaApp status")
 			return ctrl.Result{}, err
 		}
 
-		// Let's re-fetch the busybox Custom Resource after updating the status
+		// Let's re-fetch the minhaapp Custom Resource after updating the status
 		// so that we have the latest state of the resource on the cluster and we will avoid
 		// raising the error "the object has been modified, please apply
 		// your changes to the latest version and try again" which would re-trigger the reconciliation
 		// if we try to update it again in the following operations
-		if err := r.Get(ctx, req.NamespacedName, busybox); err != nil {
-			log.Error(err, "Failed to re-fetch busybox")
+		if err := r.Get(ctx, req.NamespacedName, minhaapp); err != nil {
+			log.Error(err, "Failed to re-fetch minhaapp")
 			return ctrl.Result{}, err
 		}
 	}
@@ -120,67 +120,67 @@ func (r *BusyboxReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Let's add a finalizer. Then, we can define some operations which should
 	// occur before the custom resource is deleted.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers
-	if !controllerutil.ContainsFinalizer(busybox, busyboxFinalizer) {
-		log.Info("Adding Finalizer for Busybox")
-		controllerutil.AddFinalizer(busybox, busyboxFinalizer)
-		if err = r.Update(ctx, busybox); err != nil {
+	if !controllerutil.ContainsFinalizer(minhaapp, minhaappFinalizer) {
+		log.Info("Adding Finalizer for MinhaApp")
+		controllerutil.AddFinalizer(minhaapp, minhaappFinalizer)
+		if err = r.Update(ctx, minhaapp); err != nil {
 			log.Error(err, "Failed to update custom resource to add finalizer")
 			return ctrl.Result{}, err
 		}
 	}
 
-	// Check if the Busybox instance is marked to be deleted, which is
+	// Check if the MinhaApp instance is marked to be deleted, which is
 	// indicated by the deletion timestamp being set.
-	isBusyboxMarkedToBeDeleted := busybox.GetDeletionTimestamp() != nil
-	if isBusyboxMarkedToBeDeleted {
-		if controllerutil.ContainsFinalizer(busybox, busyboxFinalizer) {
-			log.Info("Performing Finalizer Operations for Busybox before delete CR")
+	isMinhaAppMarkedToBeDeleted := minhaapp.GetDeletionTimestamp() != nil
+	if isMinhaAppMarkedToBeDeleted {
+		if controllerutil.ContainsFinalizer(minhaapp, minhaappFinalizer) {
+			log.Info("Performing Finalizer Operations for MinhaApp before delete CR")
 
 			// Let's add here a status "Downgrade" to reflect that this resource began its process to be terminated.
-			meta.SetStatusCondition(&busybox.Status.Conditions, metav1.Condition{Type: typeDegradedBusybox,
+			meta.SetStatusCondition(&minhaapp.Status.Conditions, metav1.Condition{Type: typeDegradedMinhaApp,
 				Status: metav1.ConditionUnknown, Reason: "Finalizing",
-				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", busybox.Name)})
+				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", minhaapp.Name)})
 
-			if err := r.Status().Update(ctx, busybox); err != nil {
-				log.Error(err, "Failed to update Busybox status")
+			if err := r.Status().Update(ctx, minhaapp); err != nil {
+				log.Error(err, "Failed to update MinhaApp status")
 				return ctrl.Result{}, err
 			}
 
 			// Perform all operations required before removing the finalizer and allow
 			// the Kubernetes API to remove the custom resource.
-			r.doFinalizerOperationsForBusybox(busybox)
+			r.doFinalizerOperationsForMinhaApp(minhaapp)
 
-			// TODO(user): If you add operations to the doFinalizerOperationsForBusybox method
+			// TODO(user): If you add operations to the doFinalizerOperationsForMinhaApp method
 			// then you need to ensure that all worked fine before deleting and updating the Downgrade status
 			// otherwise, you should requeue here.
 
-			// Re-fetch the busybox Custom Resource before updating the status
+			// Re-fetch the minhaapp Custom Resource before updating the status
 			// so that we have the latest state of the resource on the cluster and we will avoid
 			// raising the error "the object has been modified, please apply
 			// your changes to the latest version and try again" which would re-trigger the reconciliation
-			if err := r.Get(ctx, req.NamespacedName, busybox); err != nil {
-				log.Error(err, "Failed to re-fetch busybox")
+			if err := r.Get(ctx, req.NamespacedName, minhaapp); err != nil {
+				log.Error(err, "Failed to re-fetch minhaapp")
 				return ctrl.Result{}, err
 			}
 
-			meta.SetStatusCondition(&busybox.Status.Conditions, metav1.Condition{Type: typeDegradedBusybox,
+			meta.SetStatusCondition(&minhaapp.Status.Conditions, metav1.Condition{Type: typeDegradedMinhaApp,
 				Status: metav1.ConditionTrue, Reason: "Finalizing",
-				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", busybox.Name)})
+				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", minhaapp.Name)})
 
-			if err := r.Status().Update(ctx, busybox); err != nil {
-				log.Error(err, "Failed to update Busybox status")
+			if err := r.Status().Update(ctx, minhaapp); err != nil {
+				log.Error(err, "Failed to update MinhaApp status")
 				return ctrl.Result{}, err
 			}
 
-			log.Info("Removing Finalizer for Busybox after successfully perform the operations")
-			if ok := controllerutil.RemoveFinalizer(busybox, busyboxFinalizer); !ok {
-				err = fmt.Errorf("finalizer for Busybox was not removed")
-				log.Error(err, "Failed to remove finalizer for Busybox")
+			log.Info("Removing Finalizer for MinhaApp after successfully perform the operations")
+			if ok := controllerutil.RemoveFinalizer(minhaapp, minhaappFinalizer); !ok {
+				err = fmt.Errorf("finalizer for MinhaApp was not removed")
+				log.Error(err, "Failed to remove finalizer for MinhaApp")
 				return ctrl.Result{}, err
 			}
 
-			if err := r.Update(ctx, busybox); err != nil {
-				log.Error(err, "Failed to remove finalizer for Busybox")
+			if err := r.Update(ctx, minhaapp); err != nil {
+				log.Error(err, "Failed to remove finalizer for MinhaApp")
 				return ctrl.Result{}, err
 			}
 		}
@@ -189,20 +189,20 @@ func (r *BusyboxReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Check if the deployment already exists, if not create a new one
 	found := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: busybox.Name, Namespace: busybox.Namespace}, found)
+	err = r.Get(ctx, types.NamespacedName{Name: minhaapp.Name, Namespace: minhaapp.Namespace}, found)
 	if err != nil && apierrors.IsNotFound(err) {
 		// Define a new deployment
-		dep, err := r.deploymentForBusybox(busybox)
+		dep, err := r.deploymentForMinhaApp(minhaapp)
 		if err != nil {
-			log.Error(err, "Failed to define new Deployment resource for Busybox")
+			log.Error(err, "Failed to define new Deployment resource for MinhaApp")
 
 			// The following implementation will update the status
-			meta.SetStatusCondition(&busybox.Status.Conditions, metav1.Condition{Type: typeAvailableBusybox,
+			meta.SetStatusCondition(&minhaapp.Status.Conditions, metav1.Condition{Type: typeAvailableMinhaApp,
 				Status: metav1.ConditionFalse, Reason: "Reconciling",
-				Message: fmt.Sprintf("Failed to create Deployment for the custom resource (%s): (%s)", busybox.Name, err)})
+				Message: fmt.Sprintf("Failed to create Deployment for the custom resource (%s): (%s)", minhaapp.Name, err)})
 
-			if err := r.Status().Update(ctx, busybox); err != nil {
-				log.Error(err, "Failed to update Busybox status")
+			if err := r.Status().Update(ctx, minhaapp); err != nil {
+				log.Error(err, "Failed to update MinhaApp status")
 				return ctrl.Result{}, err
 			}
 
@@ -229,11 +229,11 @@ func (r *BusyboxReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// If the size is not defined in the Custom Resource then we will set the desired replicas to 0
 	var desiredReplicas int32 = 0
-	if busybox.Spec.Size != nil {
-		desiredReplicas = *busybox.Spec.Size
+	if minhaapp.Spec.Size != nil {
+		desiredReplicas = *minhaapp.Spec.Size
 	}
 
-	// The CRD API defines that the Busybox type have a BusyboxSpec.Size field
+	// The CRD API defines that the MinhaApp type have a MinhaAppSpec.Size field
 	// to set the quantity of Deployment instances to the desired state on the cluster.
 	// Therefore, the following code will ensure the Deployment size is the same as defined
 	// via the Size spec of the Custom Resource which we are reconciling.
@@ -243,22 +243,22 @@ func (r *BusyboxReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			log.Error(err, "Failed to update Deployment",
 				"Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
 
-			// Re-fetch the busybox Custom Resource before updating the status
+			// Re-fetch the minhaapp Custom Resource before updating the status
 			// so that we have the latest state of the resource on the cluster and we will avoid
 			// raising the error "the object has been modified, please apply
 			// your changes to the latest version and try again" which would re-trigger the reconciliation
-			if err := r.Get(ctx, req.NamespacedName, busybox); err != nil {
-				log.Error(err, "Failed to re-fetch busybox")
+			if err := r.Get(ctx, req.NamespacedName, minhaapp); err != nil {
+				log.Error(err, "Failed to re-fetch minhaapp")
 				return ctrl.Result{}, err
 			}
 
 			// The following implementation will update the status
-			meta.SetStatusCondition(&busybox.Status.Conditions, metav1.Condition{Type: typeAvailableBusybox,
+			meta.SetStatusCondition(&minhaapp.Status.Conditions, metav1.Condition{Type: typeAvailableMinhaApp,
 				Status: metav1.ConditionFalse, Reason: "Resizing",
-				Message: fmt.Sprintf("Failed to update the size for the custom resource (%s): (%s)", busybox.Name, err)})
+				Message: fmt.Sprintf("Failed to update the size for the custom resource (%s): (%s)", minhaapp.Name, err)})
 
-			if err := r.Status().Update(ctx, busybox); err != nil {
-				log.Error(err, "Failed to update Busybox status")
+			if err := r.Status().Update(ctx, minhaapp); err != nil {
+				log.Error(err, "Failed to update MinhaApp status")
 				return ctrl.Result{}, err
 			}
 
@@ -272,20 +272,20 @@ func (r *BusyboxReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// The following implementation will update the status
-	meta.SetStatusCondition(&busybox.Status.Conditions, metav1.Condition{Type: typeAvailableBusybox,
+	meta.SetStatusCondition(&minhaapp.Status.Conditions, metav1.Condition{Type: typeAvailableMinhaApp,
 		Status: metav1.ConditionTrue, Reason: "Reconciling",
-		Message: fmt.Sprintf("Deployment for custom resource (%s) with %d replicas created successfully", busybox.Name, desiredReplicas)})
+		Message: fmt.Sprintf("Deployment for custom resource (%s) with %d replicas created successfully", minhaapp.Name, desiredReplicas)})
 
-	if err := r.Status().Update(ctx, busybox); err != nil {
-		log.Error(err, "Failed to update Busybox status")
+	if err := r.Status().Update(ctx, minhaapp); err != nil {
+		log.Error(err, "Failed to update MinhaApp status")
 		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil
 }
 
-// finalizeBusybox will perform the required operations before delete the CR.
-func (r *BusyboxReconciler) doFinalizerOperationsForBusybox(cr *examplecomv1alpha1.Busybox) {
+// finalizeMinhaApp will perform the required operations before delete the CR.
+func (r *MinhaAppReconciler) doFinalizerOperationsForMinhaApp(cr *exemplocomv1alpha1.MinhaApp) {
 	// TODO(user): Add the cleanup steps that the operator
 	// needs to do before the CR can be deleted. Examples
 	// of finalizers include performing backups and deleting
@@ -304,24 +304,24 @@ func (r *BusyboxReconciler) doFinalizerOperationsForBusybox(cr *examplecomv1alph
 			cr.Namespace))
 }
 
-// deploymentForBusybox returns a Busybox Deployment object
-func (r *BusyboxReconciler) deploymentForBusybox(
-	busybox *examplecomv1alpha1.Busybox) (*appsv1.Deployment, error) {
-	ls := labelsForBusybox()
+// deploymentForMinhaApp returns a MinhaApp Deployment object
+func (r *MinhaAppReconciler) deploymentForMinhaApp(
+	minhaapp *exemplocomv1alpha1.MinhaApp) (*appsv1.Deployment, error) {
+	ls := labelsForMinhaApp()
 
 	// Get the Operand image
-	image, err := imageForBusybox()
+	image, err := imageForMinhaApp()
 	if err != nil {
 		return nil, err
 	}
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      busybox.Name,
-			Namespace: busybox.Namespace,
+			Name:      minhaapp.Name,
+			Namespace: minhaapp.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: busybox.Spec.Size,
+			Replicas: minhaapp.Spec.Size,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: ls,
 			},
@@ -369,7 +369,7 @@ func (r *BusyboxReconciler) deploymentForBusybox(
 					},
 					Containers: []corev1.Container{{
 						Image:           image,
-						Name:            "busybox",
+						Name:            "minhaapp",
 						ImagePullPolicy: corev1.PullIfNotPresent,
 						// Ensure restrictive context for the container
 						// More info: https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted
@@ -382,6 +382,10 @@ func (r *BusyboxReconciler) deploymentForBusybox(
 								},
 							},
 						},
+						Ports: []corev1.ContainerPort{{
+							ContainerPort: minhaapp.Spec.ContainerPort,
+							Name:          "minhaapp",
+						}},
 					}},
 				},
 			},
@@ -390,31 +394,31 @@ func (r *BusyboxReconciler) deploymentForBusybox(
 
 	// Set the ownerRef for the Deployment
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/
-	if err := ctrl.SetControllerReference(busybox, dep, r.Scheme); err != nil {
+	if err := ctrl.SetControllerReference(minhaapp, dep, r.Scheme); err != nil {
 		return nil, err
 	}
 	return dep, nil
 }
 
-// labelsForBusybox returns the labels for selecting the resources
+// labelsForMinhaApp returns the labels for selecting the resources
 // More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/
-func labelsForBusybox() map[string]string {
+func labelsForMinhaApp() map[string]string {
 	var imageTag string
-	image, err := imageForBusybox()
+	image, err := imageForMinhaApp()
 	if err == nil {
 		imageTag = strings.Split(image, ":")[1]
 	}
 	return map[string]string{
 		"app.kubernetes.io/name":       "tdc-operator",
 		"app.kubernetes.io/version":    imageTag,
-		"app.kubernetes.io/managed-by": "BusyboxController",
+		"app.kubernetes.io/managed-by": "MinhaAppController",
 	}
 }
 
-// imageForBusybox gets the Operand image which is managed by this controller
-// from the BUSYBOX_IMAGE environment variable defined in the config/manager/manager.yaml
-func imageForBusybox() (string, error) {
-	var imageEnvVar = "BUSYBOX_IMAGE"
+// imageForMinhaApp gets the Operand image which is managed by this controller
+// from the MINHAAPP_IMAGE environment variable defined in the config/manager/manager.yaml
+func imageForMinhaApp() (string, error) {
+	var imageEnvVar = "MINHAAPP_IMAGE"
 	image, found := os.LookupEnv(imageEnvVar)
 	if !found {
 		return "", fmt.Errorf("unable to find %s environment variable with the image", imageEnvVar)
@@ -429,15 +433,15 @@ func imageForBusybox() (string, error) {
 // matches the desired state as defined in the controller’s logic.
 //
 // Notice how we configured the Manager to monitor events such as the creation, update,
-// or deletion of a Custom Resource (CR) of the Busybox kind, as well as any changes
+// or deletion of a Custom Resource (CR) of the MinhaApp kind, as well as any changes
 // to the Deployment that the controller manages and owns.
-func (r *BusyboxReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *MinhaAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		// Watch the Busybox CR(s) and trigger reconciliation whenever it
+		// Watch the MinhaApp CR(s) and trigger reconciliation whenever it
 		// is created, updated, or deleted
-		For(&examplecomv1alpha1.Busybox{}).
-		Named("busybox").
-		// Watch the Deployment managed by the BusyboxReconciler. If any changes occur to the Deployment
+		For(&exemplocomv1alpha1.MinhaApp{}).
+		Named("minhaapp").
+		// Watch the Deployment managed by the MinhaAppReconciler. If any changes occur to the Deployment
 		// owned and managed by this controller, it will trigger reconciliation, ensuring that the cluster
 		// state aligns with the desired state. See that the ownerRef was set when the Deployment was created.
 		Owns(&appsv1.Deployment{}).
