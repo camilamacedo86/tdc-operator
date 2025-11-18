@@ -2,7 +2,7 @@
 # This file is used to track the info used to scaffold your project
 # and allow the plugins properly work.
 # More info: https://book.kubebuilder.io/reference/project-config.html
-cliVersion: 4.8.0
+cliVersion: 4.10.1
 domain: my.domain
 layout:
 - go.kubebuilder.io/v4
@@ -17,7 +17,11 @@ plugins:
         containerPort: "80"
         image: nginx:1.25
       version: v1alpha1
+<<<<<<< HEAD
+  grafana.kubebuilder.io/v1-alpha: {}
+=======
   helm.kubebuilder.io/v1-alpha: {}
+>>>>>>> tmp-original-18-11-25-01-44
 projectName: tdc-operator
 repo: github/tdc-operator
 resources:

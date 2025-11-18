@@ -70,7 +70,7 @@ type MinhaApp struct {
 
 	// metadata is a standard object metadata
 	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty,omitzero"`
+	metav1.ObjectMeta `json:"metadata,omitzero"`
 
 	// spec defines the desired state of MinhaApp
 	// +required
@@ -78,7 +78,7 @@ type MinhaApp struct {
 
 	// status defines the observed state of MinhaApp
 	// +optional
-	Status MinhaAppStatus `json:"status,omitempty,omitzero"`
+	Status MinhaAppStatus `json:"status,omitzero"`
 }
 
 // +kubebuilder:object:root=true
@@ -86,7 +86,7 @@ type MinhaApp struct {
 // MinhaAppList contains a list of MinhaApp
 type MinhaAppList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
+	metav1.ListMeta `json:"metadata,omitzero"`
 	Items           []MinhaApp `json:"items"`
 }
 
